@@ -216,10 +216,8 @@
     if(!iso) return '';
     var d = new Date(iso);
     if(isNaN(d)) return '';
-    var yy = String(d.getFullYear()).slice(-2);
-    var hh = String(d.getHours()).padStart(2,'0');
-    var mi = String(d.getMinutes()).padStart(2,'0');
-    return "'" + yy + '.' + (d.getMonth()+1) + '.' + d.getDate() + ' ' + hh + ':' + mi;
+    var p = function(n){ return String(n).padStart(2,'0'); };
+    return d.getFullYear() + '-' + p(d.getMonth()+1) + '-' + p(d.getDate());
   }
   function fileIcon(name){
     var ext = String(name).split('.').pop().toLowerCase();
@@ -255,7 +253,7 @@
         var changeLabel = String(rel.description || '').split('\n')[0].trim();
         return '<div class="release-group">'
           + (assets ? '<ul class="assets">' + assets + '</ul>' : '<p class="no-asset">첨부 파일 없음</p>')
-          + '<div class="release-meta">' + formatDate(rel.latest_updated_at || rel.published_at)
+          + '<div class="release-meta">' + formatDate(rel.latest_uploaded_at || rel.latest_updated_at || rel.published_at)
           + (changeLabel ? ' <span class="release-change">(' + esc(changeLabel) + ')</span>' : '')
           + '</div></div>';
       }).join('');

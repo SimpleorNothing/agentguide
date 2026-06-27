@@ -93,9 +93,17 @@ async function listReleases(env) {
       size: a.size || 0,
       asset_id: a.id,
       download_url: a.browser_download_url,
+      // created_at = 파일이 릴리즈에 업로드된 시각(업로드 날짜). 새 파일을 올리면
+      // 그 자산의 created_at 이 갱신되므로 자동으로 최신 업로드 날짜가 된다.
+      created_at: a.created_at || rel.published_at || "",
       updated_at: a.updated_at || rel.published_at || "",
     }));
-    // 자산 갱신일 중 가장 최신값을 릴리즈 갱신일로 쓰고, 자산이 없으면 게시일로 폴백.
+    // 자산 '업로드일' 중 가장 최신값을 가이드 업로드일로 쓴다(자산 없으면 게시일 폴백).
+    const uploads = assets.map((a) => a.created_at).filter(Boolean);
+    const latest_uploaded_at = uploads.length
+      ? uploads.reduce((m, x) => (x > m ? x : m))
+      : rel.published_at;
+    // 갱신일도 함께 노출(하위 호환).
     const updates = assets.map((a) => a.updated_at).filter(Boolean);
     const latest_updated_at = updates.length
       ? updates.reduce((m, x) => (x > m ? x : m))
@@ -105,6 +113,7 @@ async function listReleases(env) {
       tag: rel.tag_name,
       description: rel.body || "",
       published_at: rel.published_at,
+      latest_uploaded_at,
       latest_updated_at,
       html_url: rel.html_url,
       assets,
