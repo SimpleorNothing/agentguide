@@ -48,7 +48,7 @@ npm install
 npm run deploy
 ```
 
-서브도메인은 `wrangler.jsonc`의 `routes` 한 줄로 관리한다(기본 `guide.samsungda.net`).
+서브도메인은 `wrangler.jsonc`의 `routes` 한 줄로 관리한다(기본 `agentguide.samsungda.net`).
 zone(`samsungda.net`)이 같은 Cloudflare 계정에 있어야 하며, Custom Domain 연결은
 대시보드가 아니라 이 `custom_domain` 라우트로 관리한다.
 
