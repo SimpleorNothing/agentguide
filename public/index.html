@@ -181,6 +181,11 @@
       <h2>워드보고서 작성 예시</h2>
       <p class="desc">클로드를 이용해 작성한 보고서입니다. (누구나 업로드 가능)</p>
     </div>
+    <div class="dropzone" id="research-dropzone" role="button" tabindex="0">
+      파일을 끌어다 놓거나 클릭해서 업로드
+      <input id="research-file" type="file" multiple hidden>
+    </div>
+    <p class="upload-status" id="research-status" aria-live="polite"></p>
     <div class="filelist">
       <div class="filelist-head">
         <span class="filelist-count">파일 목록 <b id="research-count">0</b>개</span>
@@ -198,11 +203,6 @@
         </table>
       </div>
     </div>
-    <div class="dropzone" id="research-dropzone" role="button" tabindex="0">
-      파일을 끌어다 놓거나 클릭해서 업로드
-      <input id="research-file" type="file" multiple hidden>
-    </div>
-    <p class="upload-status" id="research-status" aria-live="polite"></p>
   </section>
 
   <div class="footer-link">
