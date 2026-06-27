@@ -1,10 +1,13 @@
-// agentguide — 클로드 에이전트 만들기(가이드 자료실) Cloudflare Worker
+// agentguide — 클로드로 워드보고서 작성하기(가이드 자료실) Cloudflare Worker
 //
 // 역할:
 //  1. 정적 가이드 페이지(public/index.html)를 서비스한다.
 //  2. GitHub Releases를 프록시한다.
 //     - GET /api/releases           → 릴리즈/자산 목록(JSON)
 //     - GET /api/download/<assetId> → 비공개 저장소의 릴리즈 자산을 토큰으로 받아 전달
+//  3. 조사 결과물(보고서 작성 예시)을 포털 워커(samsungda.net)로 프록시한다.
+//     - /api/research, /api/research/<id> → 목록/업로드/삭제(R2·KV는 포털이 보유)
+//     - /research/<id>                    → 업로드된 결과물 파일 다운로드
 //
 // 자료 출처는 기본값이 SimpleorNothing/report-site 의 GitHub Releases 이며,
 // vars(GITHUB_OWNER/GITHUB_REPO)로 바꿀 수 있다. 비공개 저장소이므로
@@ -14,9 +17,15 @@
 // 이 Worker는 report-site 백엔드(FastAPI)의 /agent-guide·/api/releases·
 // /api/download 동작을 그대로 옮긴 것으로, 다운로드 집계/핑거프린트 같은
 // report-site 내부 상태에 의존하던 부가 기능은 제외한 순수 프록시 구현이다.
+// 조사 결과물(/api/research·/research)은 포털(samsungda.net) 워커가 R2·KV로
+// 보유하므로, 같은 파일 저장소를 공유하도록 그쪽으로 그대로 프록시한다.
 
 const GH_API = "https://api.github.com";
 const TEXT = { "content-type": "text/plain; charset=utf-8" };
+
+// 조사 결과물(보고서 예시)을 보유한 포털 워커. /api/research·/research/* 를
+// 이 오리진으로 프록시해 포털과 동일한 파일 목록을 공유한다.
+const PORTAL = "https://samsungda.net";
 
 function json(data, status = 200, extraHeaders = {}) {
   return new Response(JSON.stringify(data), {
@@ -117,6 +126,26 @@ async function downloadAsset(env, assetId) {
   return new Response(r.body, { headers });
 }
 
+// 조사 결과물(보고서 예시) 관련 요청을 포털 워커로 그대로 전달한다.
+// 목록(GET)·업로드(POST)·삭제(DELETE)·파일 열람(GET /research/<id>) 모두
+// 포털이 R2·KV로 처리하므로, 메서드·헤더·본문을 보존해 프록시한다.
+async function proxyToPortal(request, url) {
+  const target = PORTAL + url.pathname + (url.search || "");
+  const headers = new Headers(request.headers);
+  headers.delete("host");
+  const isBodyless = request.method === "GET" || request.method === "HEAD";
+  try {
+    return await fetch(target, {
+      method: request.method,
+      headers,
+      redirect: "follow",
+      body: isBodyless ? null : request.body,
+    });
+  } catch (e) {
+    return new Response(`포털 프록시 실패: ${e}`, { status: 502, headers: TEXT });
+  }
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -128,6 +157,15 @@ export default {
     if (path.startsWith("/api/download/")) {
       const id = decodeURIComponent(path.slice("/api/download/".length));
       return downloadAsset(env, id);
+    }
+
+    // 조사 결과물(보고서 예시)은 포털(samsungda.net) 워커가 보유 — 그대로 프록시
+    if (
+      path === "/api/research" ||
+      path.startsWith("/api/research/") ||
+      path.startsWith("/research/")
+    ) {
+      return proxyToPortal(request, url);
     }
 
     // 그 외 모든 경로는 정적 자산(가이드 페이지)으로 서비스.
