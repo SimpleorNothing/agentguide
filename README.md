@@ -22,6 +22,23 @@ wrangler.jsonc      Cloudflare Worker 설정(라우트·자산·vars)
 | `GET /` | 가이드 페이지(정적) |
 | `GET /api/releases` | 릴리즈/자산 목록(JSON) |
 | `GET /api/download/<assetId>` | 비공개 저장소의 릴리즈 자산을 토큰으로 받아 전달 |
+| `GET·POST /api/research`, `DELETE /api/research/<id>`, `GET /research/<id>` | 워드보고서 작성 예시 — 포털 공유 R2(`samsungda-research`) 목록·업로드·삭제·열람 |
+| `GET·POST /api/extra`, `DELETE /api/extra/<id>`, `GET /extra/<id>` | 클로드 에이전트 추가 가이드 — 전용 R2(`samsungda-agentguide-extra`) 목록·업로드·삭제·열람 |
+
+> `/api/research`·`/api/extra`는 같은 핸들러(`handleBucketApi`/`serveBucketFile`)를 버킷만 바꿔 공유한다. 업로드는 삭제 비밀번호(PBKDF2 해시)를 필수로 받는다.
+
+### R2 버킷
+
+| 바인딩 | 버킷 | 용도 |
+| --- | --- | --- |
+| `RESEARCH` | `samsungda-research` | 워드보고서 작성 예시(포털과 공유) |
+| `EXTRA` | `samsungda-agentguide-extra` | 클로드 에이전트 추가 가이드(전용) |
+
+추가 가이드 버킷은 최초 1회 생성이 필요하다(없으면 업로드가 503 반환):
+
+```bash
+npx wrangler r2 bucket create samsungda-agentguide-extra
+```
 
 ## 자료 출처
 

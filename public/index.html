@@ -170,17 +170,33 @@
         </div>
       </div>
 
-      <!-- 세부 메뉴 2 : 클로드 에이전트 추가 가이드 -->
-      <div class="subpanel" data-panel="extra">
+      <!-- 세부 메뉴 2 : 클로드 에이전트 추가 가이드 (업로드) -->
+      <div class="subpanel" data-panel="extra" id="extra-section">
         <div class="subpanel-head">
           <h3>클로드 에이전트 추가 가이드</h3>
-          <p class="desc">에이전트를 더 깊이 활용하기 위한 추가 가이드 자료입니다.</p>
+          <p class="desc">에이전트를 더 깊이 활용하기 위한 추가 가이드 자료입니다. (누구나 업로드 가능)</p>
         </div>
-        <div class="empty">
-          <span class="emoji">🧩</span>
-          추가 가이드는 준비 중입니다.<br>
-          자료가 업로드되면 이 메뉴에 자동으로 표시됩니다.
-          <span class="pill">추가 업로드 예정</span>
+        <div class="dropzone" id="extra-dropzone" role="button" tabindex="0">
+          파일을 끌어다 놓거나 클릭해서 업로드
+          <input id="extra-file" type="file" multiple hidden>
+        </div>
+        <p class="upload-status" id="extra-status" aria-live="polite"></p>
+        <div class="filelist">
+          <div class="filelist-head">
+            <span class="filelist-count">파일 목록 <b id="extra-count">0</b>개</span>
+            <input type="search" id="extra-search" class="filelist-search" placeholder="파일 이름 검색…">
+          </div>
+          <div class="filelist-bulk" id="extra-bulk" hidden>
+            <span class="bulk-count"><b id="extra-selcount">0</b>개 선택됨</span>
+            <button type="button" class="bulk-btn" id="extra-dl-sel">선택 다운로드</button>
+            <button type="button" class="bulk-btn bulk-del" id="extra-del-sel">선택 삭제</button>
+          </div>
+          <div class="filelist-wrap">
+            <table class="filelist-table">
+              <thead><tr><th class="col-check"><input type="checkbox" id="extra-checkall" aria-label="전체 선택"></th><th class="col-name sortable" data-sort="name">이름</th><th class="col-size sortable" data-sort="size">크기</th><th class="col-date sortable" data-sort="date">업로드</th><th class="col-act"></th></tr></thead>
+              <tbody id="extra-tbody"></tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>
@@ -282,21 +298,25 @@
   }
   loadReleases();
 
-  /* ---------- 메뉴 3 : 조사 결과물(보고서 예시) 목록 ---------- */
-  function initResearch(){
-    var section = document.getElementById('research-section');
-    var dz = document.getElementById('research-dropzone');
-    var input = document.getElementById('research-file');
-    var status = document.getElementById('research-status');
-    var tbody = document.getElementById('research-tbody');
-    var count = document.getElementById('research-count');
-    var search = document.getElementById('research-search');
-    var checkAll = document.getElementById('research-checkall');
-    var bulk = document.getElementById('research-bulk');
-    var selCount = document.getElementById('research-selcount');
-    var dlSelBtn = document.getElementById('research-dl-sel');
-    var delSelBtn = document.getElementById('research-del-sel');
+  /* ---------- 업로드형 파일 목록 (보고서 예시 / 추가 가이드 공용) ---------- */
+  // opts: { section, prefix, apiBase, fileBase, emptyText }
+  function initFileList(opts){
+    var section = document.getElementById(opts.section);
+    var dz = document.getElementById(opts.prefix + '-dropzone');
+    var input = document.getElementById(opts.prefix + '-file');
+    var status = document.getElementById(opts.prefix + '-status');
+    var tbody = document.getElementById(opts.prefix + '-tbody');
+    var count = document.getElementById(opts.prefix + '-count');
+    var search = document.getElementById(opts.prefix + '-search');
+    var checkAll = document.getElementById(opts.prefix + '-checkall');
+    var bulk = document.getElementById(opts.prefix + '-bulk');
+    var selCount = document.getElementById(opts.prefix + '-selcount');
+    var dlSelBtn = document.getElementById(opts.prefix + '-dl-sel');
+    var delSelBtn = document.getElementById(opts.prefix + '-del-sel');
     if(!tbody || !dz || !input || !section) return;
+    var apiBase = opts.apiBase;            // 예: '/api/research'
+    var fileBase = opts.fileBase;          // 예: '/research/'
+    var emptyText = opts.emptyText || '아직 업로드된 파일이 없습니다.';
 
     var allItems = [];
     var selected = {};
@@ -341,7 +361,7 @@
       if(count) count.textContent = list.length;
       visibleIds = list.map(function(it){ return it.id; });
       if(!list.length){
-        tbody.innerHTML = '<tr><td class="filelist-empty" colspan="5">'+(allItems.length ? '검색 결과가 없습니다.' : '아직 업로드된 결과물이 없습니다.')+'</td></tr>';
+        tbody.innerHTML = '<tr><td class="filelist-empty" colspan="5">'+(allItems.length ? '검색 결과가 없습니다.' : emptyText)+'</td></tr>';
         updateBulk();
         return;
       }
@@ -349,10 +369,10 @@
         var sel = !!selected[it.id];
         return '<tr'+(sel ? ' class="is-selected"' : '')+'>'
           + '<td class="col-check"><input type="checkbox" class="fchk" data-id="'+esc(it.id)+'"'+(sel ? ' checked' : '')+' aria-label="선택"></td>'
-          + '<td class="col-name"><a class="fname" href="/research/'+encodeURIComponent(it.id)+'" target="_blank" rel="noopener">'+esc(it.name)+'</a></td>'
+          + '<td class="col-name"><a class="fname" href="'+fileBase+encodeURIComponent(it.id)+'" target="_blank" rel="noopener">'+esc(it.name)+'</a></td>'
           + '<td class="col-size">'+fmtSize(it.size)+'</td>'
           + '<td class="col-date">'+fmtDate(it.uploaded)+'</td>'
-          + '<td class="col-act"><a class="fdl" href="/research/'+encodeURIComponent(it.id)+'" target="_blank" rel="noopener">다운로드</a>'
+          + '<td class="col-act"><a class="fdl" href="'+fileBase+encodeURIComponent(it.id)+'" target="_blank" rel="noopener">다운로드</a>'
           + '<button class="fdel" data-id="'+esc(it.id)+'" title="삭제" aria-label="삭제">삭제</button></td>'
           + '</tr>';
       }).join('');
@@ -396,7 +416,7 @@
     updateSortIndicator();
 
     function load(){
-      fetch('/api/research').then(function(r){ return r.ok ? r.json() : []; }).then(render).catch(function(){});
+      fetch(apiBase).then(function(r){ return r.ok ? r.json() : []; }).then(render).catch(function(){});
     }
 
     function upload(fileList){
@@ -437,7 +457,7 @@
         fd.append('title', files[i].name.replace(/\.[^.]+$/, ''));
         fd.append('uploader', uploader);
         fd.append('password', filePw);
-        fetch('/api/research', { method:'POST', body: fd })
+        fetch(apiBase, { method:'POST', body: fd })
           .then(function(r){
             if(r.ok){ done++; next(i+1); return; }
             return r.text().then(function(t){
@@ -472,7 +492,7 @@
     section.addEventListener('drop', function(e){ if(e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length){ e.preventDefault(); dz.classList.remove('is-over'); upload(e.dataTransfer.files); } });
 
     function deleteOne(id, pw){
-      return fetch('/api/research/'+encodeURIComponent(id), { method:'DELETE', headers:{ 'x-file-password': pw } })
+      return fetch(apiBase+'/'+encodeURIComponent(id), { method:'DELETE', headers:{ 'x-file-password': pw } })
         .then(function(r){
           if(r.status === 401 || r.status === 403) return { ok:false, auth:true };
           if(!r.ok && r.status !== 204) return { ok:false, status:r.status };
@@ -505,7 +525,7 @@
       selectedVisible().forEach(function(id, i){
         var it = byId[id];
         var a = document.createElement('a');
-        a.href = '/research/' + encodeURIComponent(id);
+        a.href = fileBase + encodeURIComponent(id);
         a.download = (it && it.name) || '';
         a.rel = 'noopener';
         document.body.appendChild(a);
@@ -558,7 +578,10 @@
 
     load();
   }
-  initResearch();
+  // 워드보고서 작성 예시(공유 R2: samsungda-research)
+  initFileList({ section:'research-section', prefix:'research', apiBase:'/api/research', fileBase:'/research/', emptyText:'아직 업로드된 결과물이 없습니다.' });
+  // 클로드 에이전트 추가 가이드(전용 R2: samsungda-agentguide-extra)
+  initFileList({ section:'extra-section', prefix:'extra', apiBase:'/api/extra', fileBase:'/extra/', emptyText:'아직 업로드된 추가 가이드가 없습니다.' });
 
   /* 페이지 밖 드롭 시 브라우저 기본 동작 차단 */
   window.addEventListener('dragover', function(e){ if(e.dataTransfer && Array.prototype.indexOf.call(e.dataTransfer.types || [], 'Files') > -1) e.preventDefault(); });

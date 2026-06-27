@@ -11,6 +11,9 @@
 //     - POST   /api/research        → 업로드(삭제 비밀번호 필수)
 //     - DELETE /api/research/<id>   → 삭제(업로드 시 설정한 비밀번호 필요)
 //     - GET    /research/<id>       → 파일 열람/다운로드
+//  4. '클로드 에이전트 추가 가이드' 업로드를 전용 R2 버킷(EXTRA=samsungda-agentguide-extra)
+//     에서 읽고 쓴다. 구조는 위 research와 동일(handleBucketApi/serveBucketFile 공용).
+//     - GET/POST /api/extra · DELETE /api/extra/<id> · GET /extra/<id>
 //
 // 메뉴3를 굳이 R2로 직접 구현하는 이유:
 //   포털(samsungda.net)에는 사이트 비밀번호 게이트(SITE_PASSWORD)가 있어, 세션
@@ -155,14 +158,16 @@ async function downloadAsset(env, assetId) {
   return new Response(r.body, { headers });
 }
 
-// ── 조사 결과물(메뉴3) — 포털과 동일한 R2 버킷(RESEARCH=samsungda-research) ────
-async function handleResearchApi(request, env, id) {
-  if (!env.RESEARCH) return json({ error: "R2 bucket not configured" }, 503);
+// ── R2 버킷 기반 파일 목록/업로드/삭제 (보고서 예시·추가 가이드 공용) ──────────
+// bucket 인자로 어떤 R2 버킷을 쓸지 주입한다(RESEARCH 또는 EXTRA). 키 생성·메타
+// 데이터·비밀번호 해시 방식은 포털과 동일하게 유지한다.
+async function handleBucketApi(request, env, bucket, id) {
+  if (!bucket) return json({ error: "R2 bucket not configured" }, 503);
 
   // Collection: /api/research
   if (!id) {
     if (request.method === "GET") {
-      const listed = await env.RESEARCH.list({ include: ["customMetadata", "httpMetadata"] });
+      const listed = await bucket.list({ include: ["customMetadata", "httpMetadata"] });
       const items = listed.objects.map((o) => ({
         id: o.key,
         title: o.customMetadata?.title ? decodeURIComponent(o.customMetadata.title) : o.key,
@@ -192,7 +197,7 @@ async function handleResearchApi(request, env, id) {
       const safe = (name.replace(/[^\w.\-]+/g, "_").slice(-80)) || "file";
       const key = Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 7) + "-" + safe;
       const { pwhash, pwsalt } = await hashPassword(password);
-      await env.RESEARCH.put(key, await file.arrayBuffer(), {
+      await bucket.put(key, await file.arrayBuffer(), {
         httpMetadata: { contentType: file.type || "application/octet-stream" },
         customMetadata: { title: encodeURIComponent(title), name: encodeURIComponent(name), uploader: encodeURIComponent(uploader), pwhash, pwsalt },
       });
@@ -203,7 +208,7 @@ async function handleResearchApi(request, env, id) {
 
   // Item: /api/research/<id>
   if (request.method === "DELETE") {
-    const obj = await env.RESEARCH.head(id);
+    const obj = await bucket.head(id);
     if (!obj) return new Response(null, { status: 204 }); // already gone
     const provided = request.headers.get("x-file-password") || "";
     const meta = obj.customMetadata || {};
@@ -217,15 +222,15 @@ async function handleResearchApi(request, env, id) {
       ok = !!env.UPLOAD_TOKEN && provided === env.UPLOAD_TOKEN;
     }
     if (!ok) return json({ error: "wrong password" }, 403);
-    await env.RESEARCH.delete(id);
+    await bucket.delete(id);
     return new Response(null, { status: 204 });
   }
   return json({ error: "method not allowed" }, 405);
 }
 
-async function serveResearchFile(env, id) {
-  if (!env.RESEARCH) return new Response("R2 bucket not configured", { status: 503, headers: TEXT });
-  const obj = await env.RESEARCH.get(id);
+async function serveBucketFile(bucket, id) {
+  if (!bucket) return new Response("R2 bucket not configured", { status: 503, headers: TEXT });
+  const obj = await bucket.get(id);
   if (!obj) return new Response("Not found", { status: 404, headers: TEXT });
   const headers = new Headers();
   obj.writeHttpMetadata(headers);
@@ -264,18 +269,32 @@ export default {
       return downloadAsset(env, id);
     }
 
-    // 메뉴3: 조사 결과물(포털과 동일 R2 버킷 직접 접근)
+    // 워드보고서 작성 예시: 조사 결과물(포털과 동일 R2 버킷 RESEARCH 직접 접근)
     if (path === "/api/research") {
-      return handleResearchApi(request, env, null);
+      return handleBucketApi(request, env, env.RESEARCH, null);
     }
     if (path.startsWith("/api/research/")) {
       const rid = decodeURIComponent(path.slice("/api/research/".length));
-      return handleResearchApi(request, env, rid);
+      return handleBucketApi(request, env, env.RESEARCH, rid);
     }
     if (path.startsWith("/research/")) {
       const rid = decodeURIComponent(path.slice("/research/".length));
       if (!rid) return new Response("Not found", { status: 404, headers: TEXT });
-      return serveResearchFile(env, rid);
+      return serveBucketFile(env.RESEARCH, rid);
+    }
+
+    // 클로드 에이전트 추가 가이드: 전용 R2 버킷(EXTRA) 업로드/목록/삭제
+    if (path === "/api/extra") {
+      return handleBucketApi(request, env, env.EXTRA, null);
+    }
+    if (path.startsWith("/api/extra/")) {
+      const eid = decodeURIComponent(path.slice("/api/extra/".length));
+      return handleBucketApi(request, env, env.EXTRA, eid);
+    }
+    if (path.startsWith("/extra/")) {
+      const eid = decodeURIComponent(path.slice("/extra/".length));
+      if (!eid) return new Response("Not found", { status: 404, headers: TEXT });
+      return serveBucketFile(env.EXTRA, eid);
     }
 
     // 그 외 모든 경로는 정적 자산(가이드 페이지)으로 서비스.
