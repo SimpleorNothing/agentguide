@@ -1,0 +1,34 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "agentguide",
+  "main": "src/index.js",
+  "compatibility_date": "2026-05-23",
+
+  // ── 정적 자산 (public/) ─────────────────────────
+  // 가이드 페이지(index.html)를 서비스한다. /api/* 가 아닌 경로는
+  // Worker가 env.ASSETS.fetch()로 이 자산을 돌려준다.
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS"
+  },
+
+  // ── 라우트 (전용 서브도메인) ────────────────────
+  // 전용 서브도메인 guide.samsungda.net 으로 서비스한다. zone(samsungda.net)이
+  // 같은 Cloudflare 계정의 영역이어야 한다. 서브도메인을 바꾸려면 아래 pattern만
+  // 수정하면 된다(예: agent.samsungda.net). DNS/Custom Domain 연결은 대시보드가
+  // 아니라 이 custom_domain 라우트로 관리한다.
+  "routes": [
+    { "pattern": "guide.samsungda.net", "custom_domain": true }
+  ],
+
+  // 자료 출처(GitHub Releases). 비공개 저장소이므로 GITHUB_TOKEN(secret)이 필요하다:
+  //   wrangler secret put GITHUB_TOKEN
+  "vars": {
+    "GITHUB_OWNER": "SimpleorNothing",
+    "GITHUB_REPO": "report-site"
+  },
+
+  "observability": {
+    "enabled": true
+  }
+}

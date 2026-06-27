@@ -1,0 +1,13 @@
+{
+  "name": "agentguide",
+  "version": "1.0.0",
+  "description": "클로드 에이전트 만들기 — 활용법·작업 가이드 자료실 (Cloudflare Worker + GitHub Releases)",
+  "private": true,
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy"
+  },
+  "devDependencies": {
+    "wrangler": "^4.0.0"
+  }
+}

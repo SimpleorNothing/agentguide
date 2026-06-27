@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>📚 클로드 에이전트 만들기</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Apple SD Gothic Neo", Roboto, sans-serif;
+    background: #f5f5f7;
+    margin: 0;
+    padding: 40px 20px;
+    color: #1d1d1f;
+  }
+  .wrap {
+    max-width: 720px;
+    position: relative;
+    margin: 0 auto;
+    background: #fff;
+    border-radius: 18px;
+    padding: 40px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.04), 0 8px 30px rgba(0,0,0,0.06);
+  }
+  h1 {
+    font-size: 22px;
+    margin: 0 0 8px;
+    text-align: center;
+    letter-spacing: -0.5px;
+  }
+  p.lead {
+    color: #6e6e73;
+    font-size: 14px;
+    margin: 0 0 32px;
+    text-align: center;
+    line-height: 1.6;
+  }
+
+  /* --- 스켈레톤 애니메이션 추가 --- */
+  @keyframes skeleton-wave {
+    0% { background-position: -200px 0; }
+    100% { background-position: calc(200px + 100%) 0; }
+  }
+
+  .skeleton {
+    background: #f2f2f2;
+    background-image: linear-gradient(90deg, #f2f2f2 0px, #e2e2e2 40px, #f2f2f2 80px);
+    background-size: 200px 100%;
+    background-repeat: no-repeat;
+    animation: skeleton-wave 1.2s infinite linear;
+    border-radius: 4px;
+    display: inline-block;
+  }
+
+  .skeleton-box {
+    height: 140px;
+    width: 100%;
+    border-radius: 10px;
+    margin-bottom: 18px;
+  }
+  /* ------------------------------ */
+
+  .release {
+    border: 1px solid #e5e1d3;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 18px;
+    background: #fafaf5;
+  }
+  .release-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 6px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .release-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1d1d1f;
+    margin: 0;
+  }
+  .release-updated {
+    margin-top: 12px;
+    text-align: left;
+    font-size: 11px;
+    color: #888;
+  }
+  .release-date {
+    font-size: 11px;
+    color: #888;
+  }
+  .release-change {
+    color: #4a90d9;
+    font-weight: 600;
+  }
+  .release-desc {
+    font-size: 13px;
+    color: #555;
+    line-height: 1.6;
+    margin: 0 0 14px;
+    white-space: pre-wrap;
+  }
+
+  .assets {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .asset {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 12px;
+    background: #fff;
+    border: 1px solid #e5e1d3;
+    border-radius: 6px;
+    margin-bottom: 6px;
+    transition: all 0.15s;
+  }
+  .asset:hover { border-color: #a8a496; background: #faf8f0; }
+  .asset-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1;
+    min-width: 0;
+  }
+  .asset-icon { font-size: 16px; flex-shrink: 0; }
+  .asset-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: #1d1d1f;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .asset-meta {
+    font-size: 11px;
+    color: #888;
+    white-space: nowrap;
+    margin-left: 12px;
+  }
+  .asset-btn {
+    padding: 6px 14px;
+    background: #4a90d9;
+    color: #fff;
+    border: 0;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    text-decoration: none;
+    margin-left: 12px;
+    flex-shrink: 0;
+    cursor: pointer;
+  }
+  .asset-btn:hover { background: #5ea0e6; }
+
+  .empty {
+    text-align: center;
+    padding: 60px 20px;
+    color: #888;
+    font-size: 14px;
+  }
+  .loading-container { padding: 0; }
+  .error {
+    background: #ffeaea;
+    color: #8a0000;
+    padding: 14px;
+    border-radius: 10px;
+    font-size: 13px;
+    margin-top: 20px;
+  }
+
+  .footer-bar {
+    text-align: center;
+    margin-top: 20px;
+    padding: 0;
+    font-size: 12px;
+  }
+  .cta-text {
+    display: none;
+  }
+  .version-link {
+    color: #6e6e73;
+    text-decoration: none;
+    border-bottom: 1px dashed #c7c7cc;
+    padding-bottom: 1px;
+    transition: all 0.15s;
+  }
+  .version-link:hover {
+    color: #1d1d1f;
+    border-bottom-color: #1d1d1f;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <!-- 도구모음 런처 (카드 내 우상단) -->
+  <style>
+  .da-launcher{position:absolute;top:16px;right:16px;z-index:50;display:inline-flex;align-items:center;gap:6px;height:29px;padding:0 9px;border:1.5px solid #e6e9ee;border-radius:7px;background:#fff;text-decoration:none;color:#1a1d21;font-family:'Pretendard',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;font-size:12px;font-weight:600;line-height:1;transition:.15s}
+  .da-launcher:hover{border-color:#1257d6;box-shadow:0 4px 18px rgba(18,87,214,.12)}
+  .da-launcher .da-gi{display:grid;grid-template-columns:1fr 1fr;gap:2px;width:18px;height:18px}
+  .da-launcher .da-gi i{background:#5b6470;border-radius:1px;transition:.15s}
+  .da-launcher:hover .da-gi i{background:#1257d6}
+  </style>
+  <a class="da-launcher" href="https://samsungda.net" title="도구모음 열기">
+    <span class="da-gi"><i></i><i></i><i></i><i></i></span>도구모음
+  </a>
+  <h1>📚 클로드 에이전트 만들기</h1>
+  <p class="lead">
+    클로드 에이전트를 직접 만드는 데 필요한 활용법과 작업 가이드 자료를 다운로드할 수 있습니다.
+  </p>
+
+  <div id="content">
+    <div class="loading-container">
+      <div class="skeleton skeleton-box"></div>
+      <div class="skeleton skeleton-box"></div>
+      <div class="skeleton skeleton-box" style="height: 80px; width: 80%;"></div>
+    </div>
+  </div>
+
+  <div class="footer-bar">
+    <a href="https://report.samsungda.net/" class="version-link">자판기 이용해 보고서 작성하기</a>
+  </div>
+</div>
+
+<script>
+function formatBytes(bytes) {
+  if (bytes < 1024) return bytes + " B";
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
+  return (bytes / 1024 / 1024).toFixed(1) + " MB";
+}
+
+function formatDate(iso) {
+  if (!iso) return "";
+  const d = new Date(iso);
+  const yy = String(d.getFullYear()).slice(-2);
+  const hh = String(d.getHours()).padStart(2, "0");
+  const mi = String(d.getMinutes()).padStart(2, "0");
+  return `'${yy}.${d.getMonth() + 1}.${d.getDate()} ${hh}:${mi}`;
+}
+
+function getFileIcon(name) {
+  const ext = name.split(".").pop().toLowerCase();
+  if (ext === "docx" || ext === "doc") return "📄";
+  if (ext === "pdf") return "📕";
+  if (ext === "pptx" || ext === "ppt") return "📊";
+  if (ext === "xlsx" || ext === "xls") return "📈";
+  if (ext === "txt" || ext === "md") return "📝";
+  if (ext === "zip" || ext === "tar" || ext === "gz") return "📦";
+  return "📎";
+}
+
+async function loadReleases() {
+  const content = document.getElementById("content");
+
+  try {
+    const res = await fetch("/api/releases");
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const releases = await res.json();
+
+    if (!releases.length) {
+      content.innerHTML = `
+        <div class="empty">
+          📭 아직 등록된 자료가 없습니다.<br>
+          GitHub Releases에 파일이 업로드되면 여기에 자동으로 표시됩니다.
+        </div>
+      `;
+      return;
+    }
+
+    content.innerHTML = releases.map(rel => {
+      const assets = (rel.assets || []).map(a => `
+        <li class="asset">
+          <div class="asset-info">
+            <span class="asset-icon">${getFileIcon(a.name)}</span>
+            <span class="asset-name">${a.name}</span>
+          </div>
+          <span class="asset-meta">${formatBytes(a.size)}</span>
+          <a class="asset-btn" href="/api/download/${a.asset_id}">다운로드</a>
+        </li>
+      `).join("");
+
+      const changeLabel = (rel.description || "").split("\n")[0].trim();
+      return `
+        <div class="release">
+          <div class="release-header">
+            <h3 class="release-title">${rel.name}</h3>
+          </div>
+          ${assets ? `<ul class="assets">${assets}</ul>` : '<p style="color:#888;font-size:12px;">첨부 파일 없음</p>'}
+          <div class="release-updated">
+            <span class="release-date">${formatDate(rel.latest_updated_at || rel.published_at)}</span>${changeLabel ? ` <span class="release-change">(${changeLabel})</span>` : ""}
+          </div>
+        </div>
+      `;
+    }).join("");
+
+  } catch (err) {
+    content.innerHTML = `<div class="error">자료 목록을 불러오지 못했습니다 : ${err.message}</div>`;
+  }
+}
+
+// 데이터 로딩 시작
+loadReleases();
+</script>
+</body>
+</html>
