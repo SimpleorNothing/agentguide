@@ -23,7 +23,7 @@
 //   목록을 공유한다(한쪽에 올리면 양쪽에 동일하게 보인다). 키 생성·메타데이터
 //   인코딩·비밀번호 해시(PBKDF2) 방식을 포털과 똑같이 맞춰 상호 호환된다.
 //
-// 자료 출처(릴리스)는 기본값이 SimpleorNothing/report-site 이며, vars로 바꿀 수
+// 자료 출처(릴리스)는 기본값이 SimpleorNothing/agent-guide 이며, vars로 바꿀 수
 // 있다. 비공개 저장소이므로 GITHUB_TOKEN(secret)이 있어야 목록·다운로드가 동작한다.
 //   wrangler secret put GITHUB_TOKEN
 
@@ -189,7 +189,9 @@ async function handleLogin(request, env, url) {
 // ── GitHub Releases(메뉴1) ───────────────────────────────────────────────────
 function repoSlug(env) {
   const owner = env.GITHUB_OWNER || "SimpleorNothing";
-  const repo = env.GITHUB_REPO || "report-site";
+  // 가이드 자료(클로드 활용법)는 이 레포 자신(agent-guide)의 Releases에서 가져온다.
+  // wrangler.jsonc의 vars로 덮어쓸 수 있으나, vars가 없을 때도 agent-guide를 보도록 한다.
+  const repo = env.GITHUB_REPO || "agent-guide";
   return `${owner}/${repo}`;
 }
 
