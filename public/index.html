@@ -29,7 +29,7 @@
 
   /* 하위 메뉴(서브 패널) */
   .subpanel{margin-top:28px}
-  .subpanel:first-of-type{margin-top:0}
+  .panel-head + .subpanel{margin-top:0}
   .subpanel-head{margin-bottom:14px}
   .subpanel-head h3{font-size:16px;font-weight:700;letter-spacing:-.2px}
   .subpanel-head .desc{font-size:13px;color:var(--muted);margin-top:5px;line-height:1.6}
@@ -144,15 +144,23 @@
   <section class="panel" data-panel="make">
     <div class="panel-head">
       <h2>클로드 에이전트 만들기</h2>
-      <p class="desc">클로드 에이전트를 직접 만드는 데 필요한 활용법과 작업 가이드 자료를 다운로드할 수 있습니다.</p>
-    </div>
-    <div id="releases">
-      <div class="skeleton"></div>
-      <div class="skeleton"></div>
-      <div class="skeleton s2"></div>
+      <p class="desc">클로드 에이전트를 직접 만드는 데 필요한 자료를 모았습니다.</p>
     </div>
 
-    <!-- 하위 메뉴 : 클로드 에이전트 추가 가이드 -->
+    <!-- 하위 메뉴 1 : 활용법 · 작업 가이드 -->
+    <div class="subpanel" data-panel="guides">
+      <div class="subpanel-head">
+        <h3>활용법 · 작업 가이드</h3>
+        <p class="desc">클로드 에이전트를 직접 만드는 데 필요한 활용법과 작업 가이드 자료를 다운로드할 수 있습니다.</p>
+      </div>
+      <div id="releases">
+        <div class="skeleton"></div>
+        <div class="skeleton"></div>
+        <div class="skeleton s2"></div>
+      </div>
+    </div>
+
+    <!-- 하위 메뉴 2 : 클로드 에이전트 추가 가이드 -->
     <div class="subpanel" data-panel="extra">
       <div class="subpanel-head">
         <h3>클로드 에이전트 추가 가이드</h3>
