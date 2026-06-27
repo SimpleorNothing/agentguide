@@ -32,13 +32,8 @@
   // 포털(samsungda-portal)과 "같은" 버킷을 공유한다. 한쪽에서 올린 파일이 양쪽에
   // 동일하게 보이며, 업로드/삭제 메타데이터(비밀번호 해시 등)도 호환된다. 포털은
   // 사이트 비밀번호 게이트가 있어 서버 프록시로는 접근할 수 없으므로 직접 바인딩한다.
-  // ── 추가 가이드(메뉴1 하위) 업로드 R2 버킷 ──────
-  // '클로드 에이전트 추가 가이드' 전용 버킷. 보고서 예시(RESEARCH)와 분리해
-  // 포털 목록에 섞이지 않게 한다. 배포 전 버킷을 1회 생성해야 한다:
-  //   npx wrangler r2 bucket create samsungda-agentguide-extra
   "r2_buckets": [
-    { "binding": "RESEARCH", "bucket_name": "samsungda-research" },
-    { "binding": "EXTRA", "bucket_name": "samsungda-agentguide-extra" }
+    { "binding": "RESEARCH", "bucket_name": "samsungda-research" }
   ],
 
   "observability": {

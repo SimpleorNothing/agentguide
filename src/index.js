@@ -11,9 +11,6 @@
 //     - POST   /api/research        → 업로드(삭제 비밀번호 필수)
 //     - DELETE /api/research/<id>   → 삭제(업로드 시 설정한 비밀번호 필요)
 //     - GET    /research/<id>       → 파일 열람/다운로드
-//  4. '클로드 에이전트 추가 가이드' 업로드를 전용 R2 버킷(EXTRA=samsungda-agentguide-extra)
-//     에서 읽고 쓴다. 구조는 위 research와 동일(handleBucketApi/serveBucketFile 공용).
-//     - GET/POST /api/extra · DELETE /api/extra/<id> · GET /extra/<id>
 //
 // 메뉴3를 굳이 R2로 직접 구현하는 이유:
 //   포털(samsungda.net)에는 사이트 비밀번호 게이트(SITE_PASSWORD)가 있어, 세션
@@ -159,7 +156,7 @@ async function downloadAsset(env, assetId) {
 }
 
 // ── R2 버킷 기반 파일 목록/업로드/삭제 (보고서 예시·추가 가이드 공용) ──────────
-// bucket 인자로 어떤 R2 버킷을 쓸지 주입한다(RESEARCH 또는 EXTRA). 키 생성·메타
+// bucket 인자로 어떤 R2 버킷을 쓸지 주입한다(현재 RESEARCH). 키 생성·메타
 // 데이터·비밀번호 해시 방식은 포털과 동일하게 유지한다.
 async function handleBucketApi(request, env, bucket, id) {
   if (!bucket) return json({ error: "R2 bucket not configured" }, 503);
@@ -281,20 +278,6 @@ export default {
       const rid = decodeURIComponent(path.slice("/research/".length));
       if (!rid) return new Response("Not found", { status: 404, headers: TEXT });
       return serveBucketFile(env.RESEARCH, rid);
-    }
-
-    // 클로드 에이전트 추가 가이드: 전용 R2 버킷(EXTRA) 업로드/목록/삭제
-    if (path === "/api/extra") {
-      return handleBucketApi(request, env, env.EXTRA, null);
-    }
-    if (path.startsWith("/api/extra/")) {
-      const eid = decodeURIComponent(path.slice("/api/extra/".length));
-      return handleBucketApi(request, env, env.EXTRA, eid);
-    }
-    if (path.startsWith("/extra/")) {
-      const eid = decodeURIComponent(path.slice("/extra/".length));
-      if (!eid) return new Response("Not found", { status: 404, headers: TEXT });
-      return serveBucketFile(env.EXTRA, eid);
     }
 
     // 그 외 모든 경로는 정적 자산(가이드 페이지)으로 서비스.

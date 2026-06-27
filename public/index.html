@@ -154,54 +154,16 @@
   <!-- 메뉴 1 : 클로드 에이전트 만들기 -->
   <section class="panel" data-panel="make">
     <div class="panel-head">
-      <span class="step-badge">STEP 1</span>
+      <span class="step-badge">MENU 1</span>
       <h2>클로드 에이전트 만들기</h2>
-      <p class="desc">클로드 에이전트를 직접 만드는 데 필요한 자료를 모았습니다.</p>
+      <p class="desc">클로드 에이전트를 직접 만드는 데 필요한 활용법과 작업 가이드 자료를 다운로드할 수 있습니다.</p>
     </div>
 
-    <!-- 두 세부 메뉴를 하나의 회색 박스 안에 -->
     <div class="make-box">
-      <!-- 세부 메뉴 1 : 활용법 · 작업 가이드 -->
-      <div class="subpanel" data-panel="guides">
-        <div class="subpanel-head">
-          <h3>활용법 · 작업 가이드</h3>
-          <p class="desc">클로드 에이전트를 직접 만드는 데 필요한 활용법과 작업 가이드 자료를 다운로드할 수 있습니다.</p>
-        </div>
-        <div id="releases">
-          <div class="skeleton"></div>
-          <div class="skeleton"></div>
-          <div class="skeleton s2"></div>
-        </div>
-      </div>
-
-      <!-- 세부 메뉴 2 : 클로드 에이전트 추가 가이드 (업로드) -->
-      <div class="subpanel" data-panel="extra" id="extra-section">
-        <div class="subpanel-head">
-          <h3>클로드 에이전트 추가 가이드</h3>
-          <p class="desc">에이전트를 더 깊이 활용하기 위한 추가 가이드 자료입니다. (누구나 업로드 가능)</p>
-        </div>
-        <div class="dropzone" id="extra-dropzone" role="button" tabindex="0">
-          파일을 끌어다 놓거나 클릭해서 업로드
-          <input id="extra-file" type="file" multiple hidden>
-        </div>
-        <p class="upload-status" id="extra-status" aria-live="polite"></p>
-        <div class="filelist">
-          <div class="filelist-head">
-            <span class="filelist-count">파일 목록 <b id="extra-count">0</b>개</span>
-            <input type="search" id="extra-search" class="filelist-search" placeholder="파일 이름 검색…">
-          </div>
-          <div class="filelist-bulk" id="extra-bulk" hidden>
-            <span class="bulk-count"><b id="extra-selcount">0</b>개 선택됨</span>
-            <button type="button" class="bulk-btn" id="extra-dl-sel">선택 다운로드</button>
-            <button type="button" class="bulk-btn bulk-del" id="extra-del-sel">선택 삭제</button>
-          </div>
-          <div class="filelist-wrap">
-            <table class="filelist-table">
-              <thead><tr><th class="col-check"><input type="checkbox" id="extra-checkall" aria-label="전체 선택"></th><th class="col-name sortable" data-sort="name">이름</th><th class="col-size sortable" data-sort="size">크기</th><th class="col-date sortable" data-sort="date">업로드</th><th class="col-act"></th></tr></thead>
-              <tbody id="extra-tbody"></tbody>
-            </table>
-          </div>
-        </div>
+      <div id="releases">
+        <div class="skeleton"></div>
+        <div class="skeleton"></div>
+        <div class="skeleton s2"></div>
       </div>
     </div>
   </section>
@@ -209,7 +171,7 @@
   <!-- 메뉴 2 : 워드보고서 작성 예시 -->
   <section class="panel" data-panel="examples" id="research-section">
     <div class="panel-head">
-      <span class="step-badge">STEP 2</span>
+      <span class="step-badge">MENU 2</span>
       <h2>워드보고서 작성 예시</h2>
       <p class="desc">클로드를 이용해 작성한 보고서입니다. (누구나 업로드 가능)</p>
     </div>
@@ -585,8 +547,6 @@
   }
   // 워드보고서 작성 예시(공유 R2: samsungda-research)
   initFileList({ section:'research-section', prefix:'research', apiBase:'/api/research', fileBase:'/research/', emptyText:'아직 업로드된 결과물이 없습니다.' });
-  // 클로드 에이전트 추가 가이드(전용 R2: samsungda-agentguide-extra)
-  initFileList({ section:'extra-section', prefix:'extra', apiBase:'/api/extra', fileBase:'/extra/', emptyText:'아직 업로드된 추가 가이드가 없습니다.' });
 
   /* 페이지 밖 드롭 시 브라우저 기본 동작 차단 */
   window.addEventListener('dragover', function(e){ if(e.dataTransfer && Array.prototype.indexOf.call(e.dataTransfer.types || [], 'Files') > -1) e.preventDefault(); });
