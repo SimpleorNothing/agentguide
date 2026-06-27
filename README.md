@@ -26,6 +26,28 @@ wrangler.jsonc      Cloudflare Worker 설정(라우트·자산·vars)
 
 > 업로드는 삭제 비밀번호(PBKDF2 해시)를 필수로 받는다(`handleBucketApi`/`serveBucketFile`).
 
+## 접근 보호 (비밀번호 게이트 — 포털과 세션 공유)
+
+`SITE_PASSWORD`(secret)가 설정되면 **모든 경로**가 사이트 비밀번호 게이트 뒤로 들어간다.
+`agentguide.samsungda.net`으로 직접 접속해도 비밀번호를 입력해야 하며, 통과 전에는
+가이드 페이지·릴리즈·조사 결과물(R2) 어떤 경로도 노출되지 않는다.
+
+포털(`samsungda-portal`)과 **세션을 공유**한다:
+
+- 같은 쿠키 이름(`da_portal_session`)·같은 토큰 파생(`HMAC(SITE_PASSWORD, "da-portal-auth-v1")`)을 사용.
+- 로그인 쿠키를 `Domain=.samsungda.net`으로 발급 → `samsungda.net`과 `agentguide.samsungda.net`이 한 세션을 공유.
+- 따라서 **포털에서 클릭해 들어오면(이미 로그인 상태) 재입력이 필요 없고**, 여기서 로그인해도 포털에 그대로 통한다.
+- 비밀번호를 바꾸면 파생 토큰이 달라져 기존 쿠키가 자동 무효화된다.
+
+```bash
+# 포털과 "같은 값"을 넣어야 세션이 호환된다.
+wrangler secret put SITE_PASSWORD
+```
+
+> `SITE_PASSWORD`를 설정하지 않으면 게이트는 비활성화되고 사이트가 공개된다.
+> 로컬(`localhost`)·`*.workers.dev` 미리보기에서는 쿠키 `Domain`을 생략하므로
+> 세션 공유는 실제 `*.samsungda.net` 도메인에서만 동작한다.
+
 ## 자료 출처
 
 자료는 GitHub Releases에서 가져온다. 출처는 이 레포 자신(`SimpleorNothing/agent-guide`)이며,

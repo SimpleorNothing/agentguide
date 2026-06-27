@@ -7,9 +7,13 @@
   // ── 정적 자산 (public/) ─────────────────────────
   // 가이드 페이지(index.html)를 서비스한다. /api/* 가 아닌 경로는
   // Worker가 env.ASSETS.fetch()로 이 자산을 돌려준다.
+  // run_worker_first: 정적 자산보다 Worker를 먼저 실행해 비밀번호 게이트가 루트("/")
+  // 까지 보호하도록 한다. 이 옵션이 없으면 Cloudflare가 public/index.html을 직접
+  // 서빙해 Worker(게이트)가 "/"에서 실행되지 않는다.
   "assets": {
     "directory": "./public",
-    "binding": "ASSETS"
+    "binding": "ASSETS",
+    "run_worker_first": true
   },
 
   // ── 라우트 (전용 서브도메인) ────────────────────
@@ -23,6 +27,11 @@
 
   // 자료 출처(GitHub Releases). 비공개 저장소이므로 GITHUB_TOKEN(secret)이 필요하다:
   //   wrangler secret put GITHUB_TOKEN
+  //
+  // 사이트 접근 비밀번호 게이트는 SITE_PASSWORD(secret)로 켠다 — 포털(samsungda-portal)과
+  // "같은 값"을 넣어야 세션 쿠키가 호환되어 한쪽 로그인이 양쪽에 통한다:
+  //   wrangler secret put SITE_PASSWORD
+  // (미설정 시 게이트는 비활성화되고 사이트가 공개된다.)
   "vars": {
     "GITHUB_OWNER": "SimpleorNothing",
     "GITHUB_REPO": "agent-guide"
@@ -32,6 +41,8 @@
   // 포털(samsungda-portal)과 "같은" 버킷을 공유한다. 한쪽에서 올린 파일이 양쪽에
   // 동일하게 보이며, 업로드/삭제 메타데이터(비밀번호 해시 등)도 호환된다. 포털은
   // 사이트 비밀번호 게이트가 있어 서버 프록시로는 접근할 수 없으므로 직접 바인딩한다.
+  // 이 버킷도 위 SITE_PASSWORD 게이트 뒤에 있으므로(게이트를 켠 경우) 포털과 동일한
+  // 보호 수준으로 노출된다.
   "r2_buckets": [
     { "binding": "RESEARCH", "bucket_name": "samsungda-research" }
   ],

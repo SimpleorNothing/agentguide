@@ -1,6 +1,10 @@
 // agentguide — 클로드로 워드보고서 작성하기(가이드 자료실) Cloudflare Worker
 //
 // 역할:
+//  0. 사이트 접근 비밀번호 게이트(포털 samsungda-portal과 세션 공유)를 모든 경로
+//     앞단에 적용한다. agentguide.samsungda.net 으로 직접 들어와도 비밀번호를 받고,
+//     포털(samsungda.net)에서 이미 로그인했다면 Domain=.samsungda.net 공유 쿠키로
+//     재입력 없이 통과한다. SITE_PASSWORD secret이 없으면 게이트는 비활성(공개)된다.
 //  1. 정적 가이드 페이지(public/index.html)를 서비스한다.
 //  2. GitHub Releases를 프록시한다.
 //     - GET /api/releases           → 릴리즈/자산 목록(JSON)
@@ -60,6 +64,126 @@ function timingSafeEqual(a, b) {
 async function verifyPassword(password, pwhash, pwsalt) {
   if (!password || !pwhash || !pwsalt) return false;
   return timingSafeEqual(bytesToHex(await pbkdf2(password, hexToBytes(pwsalt))), pwhash);
+}
+
+// ── 사이트 접근 비밀번호 게이트 (포털 samsungda-portal과 세션 공유) ───────────
+// 포털(samsungda.net)과 "같은" SITE_PASSWORD·세션 토큰·쿠키 이름을 쓰고, 쿠키를
+// Domain=.samsungda.net 으로 발급해 두 출처(samsungda.net · agentguide.samsungda.net)가
+// 하나의 세션을 공유한다. 따라서 포털에서 한 번 로그인했다면 여기로 직접 와도 재입력이
+// 필요 없고(공유 쿠키로 통과), 반대로 여기서 로그인해도 포털에 그대로 통한다.
+// SITE_PASSWORD secret이 없으면 게이트는 자동 비활성(사이트 공개)된다.
+const AUTH_COOKIE = "da_portal_session";
+const AUTH_MSG = "da-portal-auth-v1";
+const AUTH_MAX_AGE = 60 * 60 * 24 * 180; // 약 180일 동안 재입력 없이 유지
+
+function parseCookies(header) {
+  const out = {};
+  (header || "").split(";").forEach((part) => {
+    const i = part.indexOf("=");
+    if (i > -1) out[part.slice(0, i).trim()] = part.slice(i + 1).trim();
+  });
+  return out;
+}
+
+async function hmacHex(key, message) {
+  const k = await crypto.subtle.importKey(
+    "raw",
+    new TextEncoder().encode(key),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"]
+  );
+  const sig = await crypto.subtle.sign("HMAC", k, new TextEncoder().encode(message));
+  return bytesToHex(new Uint8Array(sig));
+}
+
+// 현재 비밀번호에서 결정되는 세션 토큰(비밀번호를 바꾸면 기존 쿠키 자동 무효화).
+// 포털과 동일한 (SITE_PASSWORD, AUTH_MSG) 조합이라 토큰이 서로 호환된다.
+function sessionToken(env) {
+  return hmacHex(env.SITE_PASSWORD, AUTH_MSG);
+}
+
+async function isAuthed(request, env) {
+  const cookie = parseCookies(request.headers.get("cookie"))[AUTH_COOKIE];
+  if (!cookie) return false;
+  return timingSafeEqual(cookie, await sessionToken(env));
+}
+
+// samsungda.net 영역에서는 서브도메인 간 공유를 위해 Domain=.samsungda.net 으로
+// 쿠키를 발급하고, 로컬(localhost)·*.workers.dev 미리보기에서는 Domain을 생략해
+// (호스트 한정) 브라우저가 쿠키를 거부하지 않게 한다.
+function cookieDomainAttr(hostname) {
+  return hostname === "samsungda.net" || hostname.endsWith(".samsungda.net")
+    ? "; Domain=.samsungda.net"
+    : "";
+}
+
+// 같은 출처 경로만 허용 — //evil.com 이나 절대 URL로의 오픈 리다이렉트 차단.
+function safeNextPath(next) {
+  return typeof next === "string" && /^\/(?!\/)/.test(next) ? next : "/";
+}
+
+function escAttr(s) {
+  return String(s).replace(/[&<>"']/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m]));
+}
+
+function loginPage(next, isError) {
+  const html = `<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>기획 도구 모음 — 로그인</title>
+<style>
+  :root{--bg:#fff;--surface:#f6f7f9;--text:#1a1d21;--muted:#5b6470;--border:#e6e9ee;--brand:#1257d6}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Pretendard',system-ui,-apple-system,'Segoe UI',Roboto,'Apple SD Gothic Neo','Noto Sans KR',sans-serif;color:var(--text);background:var(--bg);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+  .login{width:100%;max-width:360px;background:var(--surface);border:1.5px solid var(--border);border-radius:16px;padding:32px 28px}
+  h1{font-size:22px;font-weight:800;letter-spacing:-.5px;margin-bottom:8px}
+  .sub{color:var(--muted);font-size:14px;margin-bottom:22px}
+  input[type=password]{width:100%;font:inherit;font-size:15px;padding:12px 14px;border:1.5px solid var(--border);border-radius:10px;background:#fff;outline:none;transition:border-color .15s}
+  input[type=password]:focus{border-color:var(--brand)}
+  button{width:100%;margin-top:14px;font:inherit;font-size:15px;font-weight:700;color:#fff;background:var(--brand);border:none;border-radius:10px;padding:12px 14px;cursor:pointer;transition:opacity .15s}
+  button:hover{opacity:.92}
+  .err{color:#c0392b;font-size:13px;margin-bottom:14px}
+</style>
+</head>
+<body>
+  <form class="login" method="POST" action="/__auth">
+    <h1>기획 도구 모음</h1>
+    <p class="sub">계속하려면 비밀번호를 입력하세요.</p>
+    ${isError ? '<p class="err">비밀번호가 올바르지 않습니다.</p>' : ""}
+    <input type="password" name="password" placeholder="비밀번호" autocomplete="current-password" autofocus required>
+    <input type="hidden" name="next" value="${escAttr(safeNextPath(next))}">
+    <button type="submit">입장</button>
+  </form>
+</body>
+</html>`;
+  return new Response(html, {
+    status: 401,
+    headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" },
+  });
+}
+
+async function handleLogin(request, env, url) {
+  let form;
+  try {
+    form = await request.formData();
+  } catch {
+    return loginPage("/", true);
+  }
+  const password = String(form.get("password") || "");
+  const next = safeNextPath(String(form.get("next") || "/"));
+  if (!timingSafeEqual(password, env.SITE_PASSWORD)) {
+    return loginPage(next, true);
+  }
+  const secure = url.protocol === "https:" ? "; Secure" : "";
+  const headers = new Headers({ Location: next });
+  headers.append(
+    "Set-Cookie",
+    `${AUTH_COOKIE}=${await sessionToken(env)}; Path=/; Max-Age=${AUTH_MAX_AGE}; HttpOnly; SameSite=Lax${cookieDomainAttr(url.hostname)}${secure}`
+  );
+  return new Response(null, { status: 303, headers });
 }
 
 // ── GitHub Releases(메뉴1) ───────────────────────────────────────────────────
@@ -265,6 +389,19 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
     const path = url.pathname;
+
+    // 사이트 접근 비밀번호 게이트(포털 samsungda-portal과 세션 공유).
+    // 포털에서 이미 로그인했다면 Domain=.samsungda.net 공유 쿠키로 그대로 통과하고,
+    // 아니면 로그인 페이지를 띄운다. 통과 전에는 가이드 페이지·조사 결과물(R2) 등
+    // 어떤 경로도 노출하지 않는다. SITE_PASSWORD 미설정 시 게이트는 비활성(공개).
+    if (env.SITE_PASSWORD) {
+      if (path === "/__auth" && request.method === "POST") {
+        return handleLogin(request, env, url);
+      }
+      if (!(await isAuthed(request, env))) {
+        return loginPage(path + (url.search || ""), false);
+      }
+    }
 
     // 메뉴1: GitHub Releases
     if (path === "/api/releases") {
