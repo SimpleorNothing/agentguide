@@ -34,6 +34,14 @@
   .subpanel-head h3{font-size:16px;font-weight:700;letter-spacing:-.2px}
   .subpanel-head .desc{font-size:13px;color:var(--muted);margin-top:5px;line-height:1.6}
 
+  /* 클로드 에이전트 만들기 — 두 세부 메뉴를 하나의 박스에 */
+  .make-box{border:1.5px solid var(--border);border-radius:14px;padding:22px;background:var(--surface)}
+  .make-box > .subpanel{margin-top:0}
+  .make-box > .subpanel + .subpanel{margin-top:24px;padding-top:24px;border-top:1.5px solid var(--border)}
+  .make-box .empty{background:#fff;border-style:solid}
+  .release-group{margin-bottom:14px}
+  .release-group:last-child{margin-bottom:0}
+
   /* 릴리스(자료) 목록 */
   @keyframes skeleton-wave{0%{background-position:-200px 0}100%{background-position:calc(200px + 100%) 0}}
   .skeleton{background:#eef0f3;background-image:linear-gradient(90deg,#eef0f3 0,#e2e6ec 40px,#eef0f3 80px);background-size:200px 100%;background-repeat:no-repeat;animation:skeleton-wave 1.2s infinite linear;border-radius:10px;display:block;height:120px;margin-bottom:14px}
@@ -147,30 +155,33 @@
       <p class="desc">클로드 에이전트를 직접 만드는 데 필요한 자료를 모았습니다.</p>
     </div>
 
-    <!-- 하위 메뉴 1 : 활용법 · 작업 가이드 -->
-    <div class="subpanel" data-panel="guides">
-      <div class="subpanel-head">
-        <h3>활용법 · 작업 가이드</h3>
-        <p class="desc">클로드 에이전트를 직접 만드는 데 필요한 활용법과 작업 가이드 자료를 다운로드할 수 있습니다.</p>
+    <!-- 두 세부 메뉴를 하나의 회색 박스 안에 -->
+    <div class="make-box">
+      <!-- 세부 메뉴 1 : 활용법 · 작업 가이드 -->
+      <div class="subpanel" data-panel="guides">
+        <div class="subpanel-head">
+          <h3>활용법 · 작업 가이드</h3>
+          <p class="desc">클로드 에이전트를 직접 만드는 데 필요한 활용법과 작업 가이드 자료를 다운로드할 수 있습니다.</p>
+        </div>
+        <div id="releases">
+          <div class="skeleton"></div>
+          <div class="skeleton"></div>
+          <div class="skeleton s2"></div>
+        </div>
       </div>
-      <div id="releases">
-        <div class="skeleton"></div>
-        <div class="skeleton"></div>
-        <div class="skeleton s2"></div>
-      </div>
-    </div>
 
-    <!-- 하위 메뉴 2 : 클로드 에이전트 추가 가이드 -->
-    <div class="subpanel" data-panel="extra">
-      <div class="subpanel-head">
-        <h3>클로드 에이전트 추가 가이드</h3>
-        <p class="desc">에이전트를 더 깊이 활용하기 위한 추가 가이드 자료입니다.</p>
-      </div>
-      <div class="empty">
-        <span class="emoji">🧩</span>
-        추가 가이드는 준비 중입니다.<br>
-        자료가 업로드되면 이 메뉴에 자동으로 표시됩니다.
-        <span class="pill">추가 업로드 예정</span>
+      <!-- 세부 메뉴 2 : 클로드 에이전트 추가 가이드 -->
+      <div class="subpanel" data-panel="extra">
+        <div class="subpanel-head">
+          <h3>클로드 에이전트 추가 가이드</h3>
+          <p class="desc">에이전트를 더 깊이 활용하기 위한 추가 가이드 자료입니다.</p>
+        </div>
+        <div class="empty">
+          <span class="emoji">🧩</span>
+          추가 가이드는 준비 중입니다.<br>
+          자료가 업로드되면 이 메뉴에 자동으로 표시됩니다.
+          <span class="pill">추가 업로드 예정</span>
+        </div>
       </div>
     </div>
   </section>
@@ -259,8 +270,7 @@
             + '</li>';
         }).join('');
         var changeLabel = String(rel.description || '').split('\n')[0].trim();
-        return '<div class="release">'
-          + '<h3 class="release-title">' + esc(rel.name) + '</h3>'
+        return '<div class="release-group">'
           + (assets ? '<ul class="assets">' + assets + '</ul>' : '<p class="no-asset">첨부 파일 없음</p>')
           + '<div class="release-meta">' + formatDate(rel.latest_updated_at || rel.published_at)
           + (changeLabel ? ' <span class="release-change">(' + esc(changeLabel) + ')</span>' : '')
