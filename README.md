@@ -50,16 +50,17 @@ wrangler secret put SITE_PASSWORD
 
 ## 자료 출처
 
-자료는 GitHub Releases에서 가져온다. 출처는 이 레포 자신(`SimpleorNothing/agent-guide`)이며,
-`wrangler.jsonc`의 `vars`에서 바꿀 수 있다. (이전에는 `report-site` 릴리즈에서 가져왔으나
-가이드 자산 4개를 이 레포의 `latest-guides` 릴리즈로 이관했다.)
+자료는 GitHub Releases에서 가져온다. 출처는 `SimpleorNothing/report-site` 의
+`latest-guides` 릴리즈이며, `wrangler.jsonc`의 `vars`에서 바꿀 수 있다. 가이드 자산은
+**report-site 로 단일화**한다(Google Drive → report-site `prompts/`·`latest-guides` 릴리즈
+동시 동기화). 이 레포(agent-guide)는 표시(프록시) 레이어만 담당한다.
 
 ```jsonc
-"vars": { "GITHUB_OWNER": "SimpleorNothing", "GITHUB_REPO": "agent-guide" }
+"vars": { "GITHUB_OWNER": "SimpleorNothing", "GITHUB_REPO": "report-site" }
 ```
 
-저장소가 비공개이므로 목록·다운로드에는 토큰이 필요하다. 토큰은 비밀값이라
-커밋하지 않고 secret으로 등록한다(`repo` 읽기 권한):
+report-site 가 비공개이므로 목록·다운로드에는 토큰이 필요하다. 토큰은 비밀값이라
+커밋하지 않고 secret으로 등록한다(report-site `repo` 읽기 권한):
 
 ```bash
 wrangler secret put GITHUB_TOKEN
