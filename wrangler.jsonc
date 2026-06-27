@@ -28,6 +28,14 @@
     "GITHUB_REPO": "report-site"
   },
 
+  // ── 조사 결과물(메뉴3) R2 버킷 ──────────────────
+  // 포털(samsungda-portal)과 "같은" 버킷을 공유한다. 한쪽에서 올린 파일이 양쪽에
+  // 동일하게 보이며, 업로드/삭제 메타데이터(비밀번호 해시 등)도 호환된다. 포털은
+  // 사이트 비밀번호 게이트가 있어 서버 프록시로는 접근할 수 없으므로 직접 바인딩한다.
+  "r2_buckets": [
+    { "binding": "RESEARCH", "bucket_name": "samsungda-research" }
+  ],
+
   "observability": {
     "enabled": true
   }
