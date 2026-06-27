@@ -27,6 +27,9 @@
   .panel-head h2{font-size:20px;font-weight:700;letter-spacing:-.3px}
   .panel-head .desc{font-size:13px;color:var(--muted);margin-top:6px;line-height:1.6}
 
+  /* STEP 배지 (메뉴 순번) */
+  .step-badge{display:inline-flex;align-items:center;height:25px;padding:0 13px;margin-bottom:10px;border-radius:999px;background:#1a2332;color:#fff;font-size:12px;font-weight:700;letter-spacing:.8px}
+
   /* 하위 메뉴(서브 패널) */
   .subpanel{margin-top:28px}
   .panel-head + .subpanel{margin-top:0}
@@ -151,6 +154,7 @@
   <!-- 메뉴 1 : 클로드 에이전트 만들기 -->
   <section class="panel" data-panel="make">
     <div class="panel-head">
+      <span class="step-badge">STEP 1</span>
       <h2>클로드 에이전트 만들기</h2>
       <p class="desc">클로드 에이전트를 직접 만드는 데 필요한 자료를 모았습니다.</p>
     </div>
@@ -205,6 +209,7 @@
   <!-- 메뉴 2 : 워드보고서 작성 예시 -->
   <section class="panel" data-panel="examples" id="research-section">
     <div class="panel-head">
+      <span class="step-badge">STEP 2</span>
       <h2>워드보고서 작성 예시</h2>
       <p class="desc">클로드를 이용해 작성한 보고서입니다. (누구나 업로드 가능)</p>
     </div>
