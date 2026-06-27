@@ -28,11 +28,12 @@ wrangler.jsonc      Cloudflare Worker 설정(라우트·자산·vars)
 
 ## 자료 출처
 
-자료는 GitHub Releases에서 가져온다. 기본 출처는 `SimpleorNothing/report-site`이며,
-`wrangler.jsonc`의 `vars`에서 바꿀 수 있다.
+자료는 GitHub Releases에서 가져온다. 출처는 이 레포 자신(`SimpleorNothing/agent-guide`)이며,
+`wrangler.jsonc`의 `vars`에서 바꿀 수 있다. (이전에는 `report-site` 릴리즈에서 가져왔으나
+가이드 자산 4개를 이 레포의 `latest-guides` 릴리즈로 이관했다.)
 
 ```jsonc
-"vars": { "GITHUB_OWNER": "SimpleorNothing", "GITHUB_REPO": "report-site" }
+"vars": { "GITHUB_OWNER": "SimpleorNothing", "GITHUB_REPO": "agent-guide" }
 ```
 
 저장소가 비공개이므로 목록·다운로드에는 토큰이 필요하다. 토큰은 비밀값이라
