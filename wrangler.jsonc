@@ -25,7 +25,10 @@
     { "pattern": "agentguide.samsungda.net", "custom_domain": true }
   ],
 
-  // 자료 출처(GitHub Releases). 비공개 저장소이므로 GITHUB_TOKEN(secret)이 필요하다:
+  // 자료 출처(GitHub Releases): SimpleorNothing/report-site 의 latest-guides 릴리즈에서
+  // 가이드 자산을 가져온다(가이드 자산은 report-site 로 단일화 — Drive→report-site
+  // prompts/·릴리즈 동시 동기화, 이 레포는 표시/프록시 레이어만 담당). report-site 가
+  // 비공개이므로 GITHUB_TOKEN(secret)에 report-site read 권한이 필요하다:
   //   wrangler secret put GITHUB_TOKEN
   //
   // 사이트 접근 비밀번호 게이트는 SITE_PASSWORD(secret)로 켠다 — 포털(samsungda-portal)과
@@ -34,7 +37,7 @@
   // (미설정 시 게이트는 비활성화되고 사이트가 공개된다.)
   "vars": {
     "GITHUB_OWNER": "SimpleorNothing",
-    "GITHUB_REPO": "agent-guide"
+    "GITHUB_REPO": "report-site"
   },
 
   // ── 조사 결과물(메뉴3) R2 버킷 ──────────────────
