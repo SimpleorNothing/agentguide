@@ -25,7 +25,7 @@
   //   wrangler secret put GITHUB_TOKEN
   "vars": {
     "GITHUB_OWNER": "SimpleorNothing",
-    "GITHUB_REPO": "report-site"
+    "GITHUB_REPO": "agent-guide"
   },
 
   // ── 조사 결과물(메뉴3) R2 버킷 ──────────────────
