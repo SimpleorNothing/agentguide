@@ -202,6 +202,21 @@ function ghHeaders(env, accept = "application/vnd.github+json") {
   return h;
 }
 
+// report-site에 커밋된 release_dates.json(자산명 → Drive modifiedTime)을 읽는다.
+// GitHub 자산 created_at(업로드 시각)은 sync 재업로드(--clobber)마다 리셋되므로,
+// 표시 갱신일은 이 맵(실제 콘텐츠 수정 시각)을 우선 사용한다. 조회 실패 시 {} 반환.
+async function fetchReleaseDates(env) {
+  try {
+    const url = `${GH_API}/repos/${repoSlug(env)}/contents/release_dates.json`;
+    const r = await fetch(url, { headers: ghHeaders(env, "application/vnd.github.raw") });
+    if (!r.ok) return {};
+    const data = await r.json();
+    return data && typeof data === "object" ? data : {};
+  } catch {
+    return {};
+  }
+}
+
 async function listReleases(env) {
   const url = `${GH_API}/repos/${repoSlug(env)}/releases`;
   let releases;
@@ -213,34 +228,40 @@ async function listReleases(env) {
     return json({ error: `Releases 조회 실패: ${e}` }, 502);
   }
 
+  // 실제 콘텐츠 갱신일 맵(자산명 → Drive modifiedTime). 실패해도 목록은 정상 반환.
+  const releaseDates = await fetchReleaseDates(env);
+
   const result = (releases || []).map((rel) => {
-    const assets = (rel.assets || []).map((a) => ({
-      name: a.name || "",
-      size: a.size || 0,
-      asset_id: a.id,
-      download_url: a.browser_download_url,
-      // created_at = 파일이 릴리즈에 업로드된 시각(업로드 날짜). 새 파일을 올리면
-      // 그 자산의 created_at 이 갱신되므로 자동으로 최신 업로드 날짜가 된다.
-      created_at: a.created_at || rel.published_at || "",
-      updated_at: a.updated_at || rel.published_at || "",
-    }));
-    // 자산 '업로드일' 중 가장 최신값을 가이드 업로드일로 쓴다(자산 없으면 게시일 폴백).
-    const uploads = assets.map((a) => a.created_at).filter(Boolean);
-    const latest_uploaded_at = uploads.length
-      ? uploads.reduce((m, x) => (x > m ? x : m))
-      : rel.published_at;
-    // 갱신일도 함께 노출(하위 호환).
+    const assets = (rel.assets || []).map((a) => {
+      const name = a.name || "";
+      return {
+        name,
+        size: a.size || 0,
+        asset_id: a.id,
+        download_url: a.browser_download_url,
+        // uploaded_at = 자산이 릴리즈에 (재)업로드된 시각. sync 재업로드마다 갱신됨(참고용).
+        uploaded_at: a.created_at || rel.published_at || "",
+        // updated_at = 콘텐츠 실제 갱신일(Drive modifiedTime). 없으면 업로드 시각으로 폴백.
+        updated_at: releaseDates[name] || a.created_at || rel.published_at || "",
+      };
+    });
+    // 표시용 최신 갱신일 = 자산들의 '콘텐츠 갱신일' 중 최댓값(자산 없으면 게시일 폴백).
     const updates = assets.map((a) => a.updated_at).filter(Boolean);
     const latest_updated_at = updates.length
       ? updates.reduce((m, x) => (x > m ? x : m))
+      : rel.published_at;
+    // 실제 업로드 시각의 최신값(참고용).
+    const uploads = assets.map((a) => a.uploaded_at).filter(Boolean);
+    const latest_uploaded_at = uploads.length
+      ? uploads.reduce((m, x) => (x > m ? x : m))
       : rel.published_at;
     return {
       name: rel.name || rel.tag_name,
       tag: rel.tag_name,
       description: rel.body || "",
       published_at: rel.published_at,
-      latest_uploaded_at,
       latest_updated_at,
+      latest_uploaded_at,
       html_url: rel.html_url,
       assets,
     };
