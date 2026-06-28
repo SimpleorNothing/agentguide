@@ -253,14 +253,14 @@
           return '<li class="asset">'
             + '<span class="asset-icon">' + fileIcon(a.name) + '</span>'
             + '<span class="asset-name">' + esc(a.name) + '</span>'
-            + '<span class="asset-meta">' + formatBytes(a.size) + '</span>'
+            + '<span class="asset-meta">' + formatBytes(a.size) + (a.updated_at ? ' · ' + formatDate(a.updated_at) : '') + '</span>'
             + '<a class="asset-btn" href="/api/download/' + encodeURIComponent(a.asset_id) + '">다운로드</a>'
             + '</li>';
         }).join('');
         var changeLabel = String(rel.description || '').split('\n')[0].trim();
         return '<div class="release-group">'
           + (assets ? '<ul class="assets">' + assets + '</ul>' : '<p class="no-asset">첨부 파일 없음</p>')
-          + '<div class="release-meta">' + formatDate(rel.latest_uploaded_at || rel.latest_updated_at || rel.published_at)
+          + '<div class="release-meta">' + formatDate(rel.latest_updated_at || rel.latest_uploaded_at || rel.published_at)
           + (changeLabel ? ' <span class="release-change">(' + esc(changeLabel) + ')</span>' : '')
           + '</div></div>';
       }).join('');
