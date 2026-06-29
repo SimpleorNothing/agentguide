@@ -134,18 +134,19 @@ function loginPage(next, isError) {
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>기획 도구 모음 — 로그인</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
 <style>
   :root{--bg:#fff;--surface:#f6f7f9;--text:#1a1d21;--muted:#5b6470;--border:#e6e9ee;--brand:#1257d6}
   *{box-sizing:border-box;margin:0;padding:0}
-  body{font-family:'Pretendard',system-ui,-apple-system,'Segoe UI',Roboto,'Apple SD Gothic Neo','Noto Sans KR',sans-serif;color:var(--text);background:var(--bg);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+  body{font-family:"Pretendard",-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;color:var(--text);background:var(--bg);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
   .login{width:100%;max-width:360px;background:var(--surface);border:1.5px solid var(--border);border-radius:16px;padding:32px 28px}
   h1{font-size:22px;font-weight:800;letter-spacing:-.5px;margin-bottom:8px}
-  .sub{color:var(--muted);font-size:14px;margin-bottom:22px}
+  .sub{color:var(--muted);font-size:15px;margin-bottom:22px}
   input[type=password]{width:100%;font:inherit;font-size:15px;padding:12px 14px;border:1.5px solid var(--border);border-radius:10px;background:#fff;outline:none;transition:border-color .15s}
   input[type=password]:focus{border-color:var(--brand)}
   button{width:100%;margin-top:14px;font:inherit;font-size:15px;font-weight:700;color:#fff;background:var(--brand);border:none;border-radius:10px;padding:12px 14px;cursor:pointer;transition:opacity .15s}
   button:hover{opacity:.92}
-  .err{color:#c0392b;font-size:13px;margin-bottom:14px}
+  .err{color:#c0392b;font-size:15px;margin-bottom:14px}
 </style>
 </head>
 <body>

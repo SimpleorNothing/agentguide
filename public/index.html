@@ -4,17 +4,18 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>클로드로 워드보고서 작성</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
 <style>
   :root{--bg:#fff;--surface:#f6f7f9;--text:#1a1d21;--muted:#5b6470;--border:#e6e9ee;--brand:#1257d6}
   *{box-sizing:border-box;margin:0;padding:0}
-  body{font-family:'Pretendard',system-ui,-apple-system,'Segoe UI',Roboto,'Apple SD Gothic Neo','Noto Sans KR',sans-serif;color:var(--text);background:var(--bg);min-height:100vh;padding:56px 24px}
+  body{font-family:"Pretendard",-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;color:var(--text);background:var(--bg);min-height:100vh;padding:56px 24px}
   .wrap{max-width:860px;margin:0 auto;position:relative}
   header{margin-bottom:36px}
   h1{font-size:30px;font-weight:800;letter-spacing:-.5px;margin-bottom:8px}
   .sub{color:var(--muted);font-size:15px}
 
   /* 도구모음 런처 (우상단) */
-  .da-launcher{position:absolute;top:0;right:0;display:inline-flex;align-items:center;gap:7px;height:32px;padding:0 12px;border:1.5px solid var(--border);border-radius:8px;background:#fff;text-decoration:none;color:var(--text);font-size:12px;font-weight:600;line-height:1;transition:.15s}
+  .da-launcher{position:absolute;top:0;right:0;display:inline-flex;align-items:center;gap:7px;height:32px;padding:0 12px;border:1.5px solid var(--border);border-radius:8px;background:#fff;text-decoration:none;color:var(--text);font-size:15px;font-weight:600;line-height:1;transition:.15s}
   .da-launcher:hover{border-color:var(--brand);box-shadow:0 4px 18px rgba(18,87,214,.12)}
   .da-launcher svg{width:16px;height:16px;color:var(--muted);transition:.15s}
   .da-launcher:hover svg{color:var(--brand)}
@@ -25,10 +26,10 @@
 
   .panel-head{margin-bottom:18px}
   .panel-head h2{font-size:20px;font-weight:700;letter-spacing:-.3px}
-  .panel-head .desc{font-size:13px;color:var(--muted);margin-top:6px;line-height:1.6}
+  .panel-head .desc{font-size:15px;color:var(--muted);margin-top:6px;line-height:1.6}
 
   /* STEP 배지 (메뉴 순번) */
-  .step-badge{display:inline-flex;align-items:center;height:25px;padding:0 13px;border-radius:999px;background:#1a2332;color:#fff;font-size:12px;font-weight:700;letter-spacing:.8px;flex:none}
+  .step-badge{display:inline-flex;align-items:center;height:25px;padding:0 13px;border-radius:999px;background:#1a2332;color:#fff;font-size:15px;font-weight:700;letter-spacing:.8px;flex:none}
 
   /* 배지 + 제목을 한 줄에 나란히 배치 */
   .head-title{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
@@ -38,7 +39,7 @@
   .panel-head + .subpanel{margin-top:0}
   .subpanel-head{margin-bottom:14px}
   .subpanel-head h3{font-size:16px;font-weight:700;letter-spacing:-.2px}
-  .subpanel-head .desc{font-size:13px;color:var(--muted);margin-top:5px;line-height:1.6}
+  .subpanel-head .desc{font-size:15px;color:var(--muted);margin-top:5px;line-height:1.6}
 
   /* 클로드 에이전트 만들기 — 두 세부 메뉴를 하나의 박스에 */
   .make-box{border:1.5px solid var(--border);border-radius:14px;padding:22px;background:var(--surface)}
@@ -59,37 +60,37 @@
   .asset:last-child{margin-bottom:0}
   .asset:hover{border-color:var(--brand);background:#fafbfd}
   .asset-icon{font-size:16px;flex-shrink:0}
-  .asset-name{font-size:13px;font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0}
-  .asset-meta{font-size:11px;color:var(--muted);white-space:nowrap}
-  .asset-btn{flex-shrink:0;padding:7px 14px;background:var(--brand);color:#fff;border:0;border-radius:8px;font-size:12px;font-weight:600;text-decoration:none;cursor:pointer;transition:opacity .12s}
+  .asset-name{font-size:15px;font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0}
+  .asset-meta{font-size:15px;color:var(--muted);white-space:nowrap}
+  .asset-btn{flex-shrink:0;padding:7px 14px;background:var(--brand);color:#fff;border:0;border-radius:8px;font-size:15px;font-weight:600;text-decoration:none;cursor:pointer;transition:opacity .12s}
   .asset-btn:hover{opacity:.88}
-  .release-meta{margin-top:12px;font-size:11px;color:var(--muted)}
+  .release-meta{margin-top:12px;font-size:15px;color:var(--muted)}
   .release-change{color:var(--brand);font-weight:600}
-  .no-asset{color:var(--muted);font-size:12px}
+  .no-asset{color:var(--muted);font-size:15px}
 
   /* 공용 빈/오류 상태 */
-  .empty{text-align:center;padding:56px 20px;color:var(--muted);font-size:14px;line-height:1.7;border:1.5px dashed var(--border);border-radius:14px;background:var(--surface)}
+  .empty{text-align:center;padding:56px 20px;color:var(--muted);font-size:15px;line-height:1.7;border:1.5px dashed var(--border);border-radius:14px;background:var(--surface)}
   .empty .emoji{font-size:30px;display:block;margin-bottom:12px}
-  .empty .pill{display:inline-block;margin-top:14px;font-size:12px;font-weight:600;color:var(--brand);background:rgba(18,87,214,.08);border-radius:999px;padding:5px 12px}
-  .error{background:#ffeaea;color:#8a0000;padding:14px;border-radius:12px;font-size:13px}
+  .empty .pill{display:inline-block;margin-top:14px;font-size:15px;font-weight:600;color:var(--brand);background:rgba(18,87,214,.08);border-radius:999px;padding:5px 12px}
+  .error{background:#ffeaea;color:#8a0000;padding:14px;border-radius:12px;font-size:15px}
 
   /* 조사 결과물 목록(표) — 포털 동일 */
   .filelist{margin-top:0}
   .filelist-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
-  .filelist-count{font-size:14px;font-weight:600;color:var(--text)}
+  .filelist-count{font-size:15px;font-weight:600;color:var(--text)}
   .filelist-count b{color:var(--brand)}
-  .filelist-search{font:inherit;font-size:13px;padding:8px 12px;border:1.5px solid var(--border);border-radius:10px;background:#fff;color:var(--text);outline:none;width:220px;max-width:50%;transition:border-color .15s}
+  .filelist-search{font:inherit;font-size:15px;padding:8px 12px;border:1.5px solid var(--border);border-radius:10px;background:#fff;color:var(--text);outline:none;width:220px;max-width:50%;transition:border-color .15s}
   .filelist-search:focus{border-color:var(--brand)}
   .filelist-wrap{overflow-x:auto}
-  .filelist-table{width:100%;border-collapse:collapse;font-size:13px}
-  .filelist-table th{text-align:left;font-weight:600;font-size:12px;color:var(--muted);padding:0 12px 10px;border-bottom:1.5px solid var(--border);white-space:nowrap}
+  .filelist-table{width:100%;border-collapse:collapse;font-size:15px}
+  .filelist-table th{text-align:left;font-weight:600;font-size:15px;color:var(--muted);padding:0 12px 10px;border-bottom:1.5px solid var(--border);white-space:nowrap}
   .filelist-table th.sortable{cursor:pointer;user-select:none;-webkit-user-select:none}
   .filelist-table th.sortable:hover{color:var(--brand)}
   .filelist-table th.sortable::after{content:'';display:inline-block;margin-left:5px;opacity:.55}
   .filelist-table th.sort-asc{color:var(--brand)}
   .filelist-table th.sort-desc{color:var(--brand)}
-  .filelist-table th.sort-asc::after{content:'▲';font-size:9px}
-  .filelist-table th.sort-desc::after{content:'▼';font-size:9px}
+  .filelist-table th.sort-asc::after{content:'▲';font-size:15px}
+  .filelist-table th.sort-desc::after{content:'▼';font-size:15px}
   .filelist-table td{padding:13px 12px;border-bottom:1px solid var(--border);color:var(--text);vertical-align:middle}
   .filelist-table tr:hover td{background:var(--surface)}
   .filelist-table .col-size,.filelist-table .col-date{white-space:nowrap;color:var(--muted)}
@@ -98,23 +99,23 @@
   .filelist .fname:hover{color:var(--brand);text-decoration:underline}
   .filelist .fdl{color:var(--brand);text-decoration:none;font-weight:600;margin-right:6px}
   .filelist .fdl:hover{text-decoration:underline}
-  .filelist .fdel{font:inherit;font-size:13px;color:var(--muted);background:transparent;border:none;cursor:pointer;padding:4px 8px;border-radius:7px;transition:background .12s,color .12s}
+  .filelist .fdel{font:inherit;font-size:15px;color:var(--muted);background:transparent;border:none;cursor:pointer;padding:4px 8px;border-radius:7px;transition:background .12s,color .12s}
   .filelist .fdel:hover{background:#ffe1e1;color:#c0392b}
-  .filelist-empty{padding:30px 12px;text-align:center;color:var(--muted);font-size:14px}
+  .filelist-empty{padding:30px 12px;text-align:center;color:var(--muted);font-size:15px}
   .filelist-table .col-check{width:34px;text-align:center;padding-left:0;padding-right:0}
   .filelist-table .col-check input{width:16px;height:16px;cursor:pointer;accent-color:var(--brand);margin:0;vertical-align:middle}
   .filelist-table tr.is-selected td{background:rgba(18,87,214,.06)}
-  .filelist-bulk{display:flex;align-items:center;gap:10px;margin-bottom:12px;padding:10px 12px;background:var(--surface);border:1.5px solid var(--border);border-radius:10px;font-size:13px}
+  .filelist-bulk{display:flex;align-items:center;gap:10px;margin-bottom:12px;padding:10px 12px;background:var(--surface);border:1.5px solid var(--border);border-radius:10px;font-size:15px}
   .filelist-bulk .bulk-count{color:var(--text);font-weight:600}
   .filelist-bulk .bulk-count b{color:var(--brand)}
-  .filelist-bulk .bulk-btn{margin-left:0;font:inherit;font-size:13px;font-weight:600;color:var(--brand);background:#fff;border:1.5px solid var(--border);border-radius:8px;padding:6px 12px;cursor:pointer;transition:border-color .12s,background .12s,color .12s}
+  .filelist-bulk .bulk-btn{margin-left:0;font:inherit;font-size:15px;font-weight:600;color:var(--brand);background:#fff;border:1.5px solid var(--border);border-radius:8px;padding:6px 12px;cursor:pointer;transition:border-color .12s,background .12s,color .12s}
   .filelist-bulk .bulk-btn:hover{border-color:var(--brand)}
   .filelist-bulk .bulk-del{color:#c0392b}
   .filelist-bulk .bulk-del:hover{border-color:#c0392b;background:#ffe1e1}
-  .dropzone{margin-top:14px;border:1.5px dashed var(--border);border-radius:14px;padding:22px;text-align:center;color:var(--muted);font-size:14px;cursor:pointer;transition:border-color .15s,background .15s,color .15s}
+  .dropzone{margin-top:14px;border:1.5px dashed var(--border);border-radius:14px;padding:22px;text-align:center;color:var(--muted);font-size:15px;cursor:pointer;transition:border-color .15s,background .15s,color .15s}
   .dropzone:hover{border-color:var(--brand)}
   .dropzone.is-over{border-color:var(--brand);background:rgba(18,87,214,.06);color:var(--brand)}
-  .upload-status{margin-top:10px;font-size:13px;color:var(--muted);min-height:18px}
+  .upload-status{margin-top:10px;font-size:15px;color:var(--muted);min-height:18px}
 
   @media (max-width:600px){
     body{padding:48px 18px}
@@ -129,8 +130,8 @@
     .filelist-table td{padding:0;border:none}
     .filelist-table .col-check{position:absolute;left:0;top:13px;width:auto;text-align:left}
     .filelist-table .col-name{margin-bottom:5px}
-    .filelist-table .fname{display:block;font-size:14px;overflow-wrap:anywhere}
-    .filelist-table .col-size,.filelist-table .col-date{display:inline-block;font-size:12px}
+    .filelist-table .fname{display:block;font-size:15px;overflow-wrap:anywhere}
+    .filelist-table .col-size,.filelist-table .col-date{display:inline-block;font-size:15px}
     .filelist-table .col-size{margin-right:12px}
     .filelist-table .col-act{margin-top:8px;text-align:left}
     .filelist-table .fdl{margin-right:14px}
