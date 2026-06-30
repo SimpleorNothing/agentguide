@@ -322,7 +322,12 @@ async function handleBucketApi(request, env, bucket, id) {
   if (!id) {
     if (request.method === "GET") {
       const listed = await bucket.list({ include: ["customMetadata", "httpMetadata"] });
-      const items = listed.objects.map((o) => ({
+      // report-idea의 아이디어 뱅크(idea-bank/ prefix)는 같은 버킷을 공유하지만
+      // 이 파일 목록의 대상이 아니다. report-idea가 직접 CRUD하며 파일별 삭제
+      // 비밀번호가 없어 여기선 삭제할 수도 없으므로 목록에서 제외한다.
+      const items = listed.objects
+        .filter((o) => !o.key.startsWith("idea-bank/"))
+        .map((o) => ({
         id: o.key,
         title: o.customMetadata?.title ? decodeURIComponent(o.customMetadata.title) : o.key,
         name: o.customMetadata?.name ? decodeURIComponent(o.customMetadata.name) : o.key,
